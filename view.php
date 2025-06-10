@@ -161,15 +161,62 @@ $class = ($status == 'prepped') ? 'prepped' : (($status == 'optional') ? 'option
 
 <script>
 function saveMEP() {
-    const currentDate = document.getElementById('date-picker').value;
-    const existingSaves = JSON.parse(localStorage.getItem('savedMEPData') || '{}');
+    const data = gatherMEPData(); // Verzamel data uit de interface
+    const date = currentDate;
+    if (!confirm("Ben je zeker dat je deze MEP wil opslaan?")) return;
+    fetch('save_mep.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            data: JSON.stringify(data),
+            date: date
+        })
+    })
+    .then(response => response.text())
+    .then(result => {
+        alert(result); // Melding dat alles goed is opgeslagen
+    })
+    .catch(error => {
+        console.error('Fout bij opslaan:', error);
+        alert('Er ging iets mis bij het opslaan.');
+    });
+}
 
-    if (existingSaves[currentDate]) {
-        const confirmOverwrite = confirm('Are you sure you want to overwrite the current MEP?');
-        if (!confirmOverwrite) return;
-    }
-
+function gatherMEPData() {
     const data = [];
+    $('.dish').each(function () {
+        const id = $(this).find('.star-toggle').data('id');
+        const priority = $(this).find('.star-toggle').hasClass('active') ? 1 : 0;
+        const status = $(this).find('.status-select:checked').val() || '';
+        const notes = $(this).find('.notes').val() || '';
+        const name = $(this).find('.dish-name').text().trim() || '';
+        data.push({ id, name, status, notes, priority });
+    });
+    return data;
+}
+        const notes = $(`textarea.notes[data-id='${id}']`).val() || '';
+        const name = $(`.dish-name[data-id='${id}']`).text().trim() || '';
+        data.push({ id, name, status, notes, priority });
+    });
+    return data;
+}
+        const notesInput = document.querySelector(`textarea.notes[data-id='${id}']`);
+        const nameEl = document.querySelector(`.dish-name[data-id='${id}']`); // optioneel
+        const name = nameEl ? nameEl.textContent.trim() : '';
+        const status = statusInput ? statusInput.value : '';
+        const notes = notesInput ? notesInput.value : '';
+        data.push({ id, name, status, notes, priority });
+    });
+    return data;
+}
+    });
+    return data;
+}
+    });
+    return data;
+}
     $('.dish').each(function () {
         const id = $(this).data('id');
         const name = $(this).find('.dish-left').text().trim();
